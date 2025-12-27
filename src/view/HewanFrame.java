@@ -4,9 +4,20 @@ import view.tablemodel.HewanTableModel;
 
 import javax.swing.*;
 import javax.swing.table.JTableHeader;
-import controller.HewanController;
 
+import com.itextpdf.text.Document;
+import com.itextpdf.text.Paragraph;
+import com.itextpdf.text.pdf.PdfPTable;
+import com.itextpdf.text.pdf.PdfWriter;
+
+
+import controller.HewanController;
+import model.Hewan;
+import util.HewanPdfGenerator;
+import java.util.List;
 import java.awt.*;
+import java.io.File;
+import java.io.FileOutputStream;
 
 public class HewanFrame extends JFrame {
     private HewanController controller;
@@ -15,6 +26,7 @@ public class HewanFrame extends JFrame {
     private JButton btnAdd = new JButton("Tambah");
     private JButton btnRefresh = new JButton("Refresh");
     private JButton btnDelete = new JButton("Hapus");
+    private JButton btnGeneratePdf = new JButton("Generate PDF");
 
     private JTextField txtSearch = new JTextField(20);
 
@@ -25,7 +37,11 @@ public class HewanFrame extends JFrame {
     private JLabel lblTotal = new JLabel("0 Records");
 
     public HewanFrame() {
-        controller = new HewanController(this);
+        try {
+            controller = new HewanController(this);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         loadData();
 
         setTitle("Sistem Klinik Hewan");
@@ -76,10 +92,12 @@ public class HewanFrame extends JFrame {
         stylePurpleButton(btnAdd, purple, purpleDark);
         styleOutlineButton(btnRefresh, borderSoft, textDark);
         stylePurpleButton(btnDelete, new Color(239, 68, 68), new Color(220, 38, 38));
-
+        stylePurpleButton(btnGeneratePdf, new Color(37, 99, 235), new Color(29, 78, 216));
+        
         right.add(btnAdd);
         right.add(btnRefresh);
         right.add(btnDelete);
+        right.add(btnGeneratePdf);
 
         top.add(left, BorderLayout.WEST);
         top.add(right, BorderLayout.EAST);
@@ -130,6 +148,49 @@ public class HewanFrame extends JFrame {
     private void loadData() {
         controller.loadAllHewans();
     }
+    private void btnGeneratePdfActionPerformed(java.awt.event.ActionEvent evt) {
+    try {
+        HewanTableModel model = getTableModel();
+        List<Hewan> list = model.getHewanList();
+
+        Document document = new Document();
+        String desktopPath = System.getProperty("user.home") + File.separator + "Desktop";
+        File file = new File(desktopPath, "Data_Hewan_Klinik.pdf");
+
+        PdfWriter.getInstance(document, new FileOutputStream(file));
+        document.open();
+
+        document.add(new Paragraph("Laporan Data Hewan Klinik\n\n"));
+
+        PdfPTable table = new PdfPTable(5);
+        table.addCell("ID");
+        table.addCell("Nama");
+        table.addCell("Jenis");
+        table.addCell("Umur");
+        table.addCell("Pemilik");
+
+        for (Hewan h : list) {
+            table.addCell(String.valueOf(h.getIdHewan()));
+            table.addCell(h.getNama());
+            table.addCell(h.getJenis());
+            table.addCell(h.getUmur());
+            table.addCell(h.getPemilik());
+        }
+
+        document.add(table);
+        document.close();
+
+        Desktop.getDesktop().open(file);
+
+        JOptionPane.showMessageDialog(this,
+                "PDF berhasil dibuat di Desktop!");
+
+    } catch (Exception e) {
+        e.printStackTrace();
+        JOptionPane.showMessageDialog(this,
+                "Gagal membuat PDF: " + e.getMessage());
+    }
+}
 
     // ===== UI HELPERS ONLY (TIDAK MENGUBAH LOGIKA) =====
     private void stylePurpleButton(JButton btn, Color bg, Color hover) {
@@ -196,4 +257,10 @@ public class HewanFrame extends JFrame {
     public JLabel getTotalRecordsLabel() {
         return lblTotal;
     }
+
+   public HewanTableModel getTableModel() {
+    return (HewanTableModel) tableModel.getModel();
+}
+
+
 }

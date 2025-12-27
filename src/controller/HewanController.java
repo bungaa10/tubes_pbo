@@ -14,7 +14,7 @@ import javax.swing.SwingWorker;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
-import api.AntrianWebSocketClient;
+import api.HewanWebSocketClient;
 import model.Hewan;
 import view.HewanDialog;
 import view.HewanFrame;
@@ -30,9 +30,9 @@ public class HewanController {
     public List<Hewan> allHewans = new ArrayList<>();
     public List<Hewan> displayedHewans = new ArrayList<>();
 
-    public AntrianWebSocketClient wsClient;
+    public HewanWebSocketClient wsClient;
 
-    public HewanController(HewanFrame frame) {
+    public HewanController(HewanFrame frame) throws InterruptedException {
         this.frame = frame;
         setupEventListeners();
         setupWebSocket();
@@ -40,14 +40,14 @@ public class HewanController {
     }
 
     // ===================== WEBSOCKET =====================
-    public void setupWebSocket() {
+    public void setupWebSocket() throws InterruptedException {
         try {
             URI uri = new URI("ws://localhost:3000/api/hewan");
-            wsClient = new AntrianWebSocketClient(uri, (Consumer<String>) message -> {
+            wsClient = new HewanWebSocketClient(uri, (Consumer<String>) message -> {
                 System.out.println("📩 Realtime update: " + message);
                 handleWebSocketMessage(message);
             });
-            wsClient.connect();
+            wsClient.connectBlocking();
         } catch (URISyntaxException e) {
             JOptionPane.showMessageDialog(
                     frame,
@@ -179,7 +179,6 @@ SwingWorker<Void, Void> worker =
             SwingWorker<Void, Void> worker = new DeleteHewanWorker(hewan, frame);
             worker.addPropertyChangeListener(evt -> {
                 if (SwingWorker.StateValue.DONE.equals(evt.getNewValue())) {
-                    loadAllHewans();
                 }
             });
             worker.execute();
@@ -220,5 +219,6 @@ SwingWorker<Void, Void> worker =
     frame.getDeleteButton().setEnabled(!loading);
     frame.getProgressBar().setIndeterminate(loading);
 }
+
 
 }

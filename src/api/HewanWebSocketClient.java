@@ -5,11 +5,11 @@ import java.util.function.Consumer;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
 
-public class AntrianWebSocketClient extends WebSocketClient {
+public class HewanWebSocketClient extends WebSocketClient {
 
     private final Consumer<String> onMessage;
 
-    public AntrianWebSocketClient(URI serverUri, Consumer<String> onMessage) {
+    public HewanWebSocketClient(URI serverUri, Consumer<String> onMessage) {
         super(serverUri);
         this.onMessage = onMessage;
     }

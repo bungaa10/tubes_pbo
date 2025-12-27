@@ -45,7 +45,6 @@ public class HewanApiClient {
 
     // ===== CREATE =====
     public static void save(Hewan h) throws Exception {
-
     String json = """
     {
       "nama": "%s",
